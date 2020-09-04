@@ -5,15 +5,30 @@ URLBASE="https://api.guildwars2.com/v2/"
 
 
 def main():
-#
+    #
     conf=""
     with open("conf.json","r") as conf_file:
         conf=json.load(conf_file)
     resp = requests.get(URLBASE+"commerce/transactions/history/buys?access_token="+conf["apikey"])
     items = resp.json()
+    dict_buys = {}
+
     for item in items:
-        resp_obj = requests.get(URLBASE + "items/" + str(item["item_id"])+"?lang=fr")
-        print(resp_obj.json()["name"] + " a été acheté au prix EXHORBITANT de "+str(item["price"])+ "et y en avait "+ str(item["quantity"])+".")
+        if item["item_id"] in dict_buys :
+            if item["price"] in dict_buys[item["item_id"]]:
+                dict_buys[item["item_id"]][item["price"]] =dict_buys[item["item_id"]][item["price"]]+ item["quantity"]
+            else :
+                dict_buys[item["item_id"]][item["price"]] = item["quantity"]
+        else :
+            dict_buys[item["item_id"]] = {item["price"]:item["quantity"]}
+    for key, value in dict_buys.items():
+        resp_obj = requests.get(URLBASE + "items/" + str(key) + "?lang=fr")
+        for key2,value2 in value.items():
+            print(resp_obj.json()["name"] + " a été acheté au prix EXHORBITANT de "+str(key2)+ " et y en avait "+ str(value2)+".")
+
+
+
+
 
 
 
